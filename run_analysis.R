@@ -4,6 +4,12 @@ library(tidyverse)
 rm(list=ls())
 setwd("/Users/megan/Documents/UCI HAR Dataset/")
 
+#####################################################################
+
+###  1. Merges the training and the test sets to create one data set.
+
+#####################################################################
+
 #import test files
 data_test = read.table("test/X_test.txt")
 labels_test = read.table("test/Y_test.txt")
@@ -19,17 +25,53 @@ data = rbind(data_test, data_train)
 activity = rbind(labels_test, labels_train)
 subject = rbind(subject_test,subject_train)
 
-#set names of subject and activity columns
+#set names of subject and activity columns and merge into one column
 names(subject) = c("subject")
-names(labels)= c("activity")
+names(activity)= c("activity")
+subj_active = cbind(subject,activity)
+
+
+##############################################################################
+
+###  2. Extracts only the measurements on the mean and sd for each measurement.
+
+##############################################################################
 
 #import data variable names and set them as the names of the data columns
 features = read.table("features.txt")
 names(data) = features$V2
 
+#extract only mean and std columns
+data_mean_std = data[,grepl("mean|std",names(data))]
+
+#merge mean and std data with the subject and activity columns
+data_merge = cbind(subj_active,data_mean_std)
+
+
+##############################################################################
+
+### 3. Use descriptive activity names to name the activities in the data set
+
+##############################################################################
+
 #import activity labels
 activity_labels = read.table("activity_labels.txt")
 
-#merge 
-subj_active = cbind(subject,activity)
-data_merge = cbind(subj_active,data)
+#rename column one 
+names(activity_labels)= c("activity", "activity_name")
+
+#merge data with activity labels
+data_labeled = full_join(data_merge,activity_labels) %>% 
+  select(subject,activity,activity_name, everything())
+
+##############################################################################
+
+### 4. Appropriately labels the data set with descriptive variable names. 
+
+##############################################################################
+
+##############################################################################
+
+### 5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+
+##############################################################################
